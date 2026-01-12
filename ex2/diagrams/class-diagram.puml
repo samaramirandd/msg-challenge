@@ -1,0 +1,49 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+
+package "Domain" {
+  interface MessagePostingStrategy {
+    +postMessage(message: Message, credentials: Credentials)
+    +getServiceType(): SocialMediaService
+  }
+  class User
+  class Message
+  class Credentials
+  enum SocialMediaService
+  class PostingException
+}
+
+package "Application" {
+  class PostMessageUseCase {
+    -strategyFactory: MessageStrategyFactory
+    +execute(user: User, messageContent: String, service: SocialMediaService, credentials: Credentials)
+  }
+  class MessageStrategyFactory {
+    +createStrategy(service: SocialMediaService): MessagePostingStrategy
+  }
+}
+
+package "Infrastructure" {
+  class TwitterStrategy
+  class FacebookStrategy
+}
+
+package "Presentation" {
+  class MessagingClient
+}
+
+MessagePostingStrategy <|.. TwitterStrategy
+MessagePostingStrategy <|.. FacebookStrategy
+PostMessageUseCase --> MessageStrategyFactory : uses
+PostMessageUseCase --> MessagePostingStrategy : uses
+MessageStrategyFactory --> MessagePostingStrategy : creates
+PostMessageUseCase --> Message : creates
+PostMessageUseCase --> User
+PostMessageUseCase --> Credentials
+PostMessageUseCase --> SocialMediaService
+MessagingClient --> PostMessageUseCase : execute()
+MessagingClient --> User
+MessagingClient --> Credentials
+
+@enduml

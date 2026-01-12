@@ -1,0 +1,22 @@
+@startuml
+actor User
+participant MessagingClient
+participant PostMessageUseCase
+participant MessageStrategyFactory as Factory
+participant MessagePostingStrategy as Strategy
+database SocialMedia
+
+User -> MessagingClient : escreverMensagem()\nescolherPlataforma()
+MessagingClient -> PostMessageUseCase : execute(user, content, service, creds)
+PostMessageUseCase -> PostMessageUseCase : validate(content, creds)
+PostMessageUseCase -> Factory : createStrategy(service)
+Factory --> PostMessageUseCase : strategy
+PostMessageUseCase -> Strategy : postMessage(message, creds)
+Strategy -> Strategy : authenticate(creds)
+Strategy -> SocialMedia : post(content)
+SocialMedia --> Strategy : ack
+Strategy --> PostMessageUseCase : success/failure
+PostMessageUseCase --> MessagingClient : confirmation
+MessagingClient --> User : mostrarResultado()
+
+@enduml
